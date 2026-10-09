@@ -4,6 +4,7 @@ Wavo conecta marcas con creadores: la marca deposita un presupuesto en un contra
 
 > MVP de hackathon. Funciona **solo en Stellar Testnet**. Las vistas se verifican manualmente por un admin (no hay oracle de redes sociales).
 
+- App en producción: [wavo-stellar.vercel.app](https://wavo-stellar.vercel.app)
 - Contrato en Testnet: [`CAI46OBJ2WKRIGWQRYENLXEWITNQJ7CIAWTBI4BWD7RU7FQFTPXKGKF4`](https://stellar.expert/explorer/testnet/contract/CAI46OBJ2WKRIGWQRYENLXEWITNQJ7CIAWTBI4BWD7RU7FQFTPXKGKF4)
 - IDs, hashes y estado de las pruebas: [`CHECKLIST.md`](./CHECKLIST.md)
 - Guion del video: [`DEMO_SCRIPT.md`](./DEMO_SCRIPT.md) · Pitch: [`PITCH_DECK.md`](./PITCH_DECK.md)
@@ -142,7 +143,7 @@ Todas son de servidor; ninguna es `NEXT_PUBLIC_*`. Ver [`.env.example`](./.env.e
 ## Publicar en Vercel
 
 1. Subir el repo a GitHub (sin `.env.local`, `.stellar-keys/` ni `.stellar-deploy.json`; ya están ignorados).
-2. En Vercel: **Add New → Project → Import** el repositorio. Framework: Next.js (autodetectado), sin `vercel.json`.
+2. En Vercel: **Add New → Project → Import** el repositorio. `vercel.json` fija el framework en Next.js (si el proyecto se crea por CLI, Vercel puede elegir "Other" y servir 404).
 3. En **Settings → Environment Variables** cargar las variables de la tabla anterior, marcadas como servidor (sin prefijo `NEXT_PUBLIC_`).
 4. Deploy. La ruta de pago declara `maxDuration = 60` para esperar la confirmación on-chain.
 

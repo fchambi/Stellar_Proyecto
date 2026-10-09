@@ -108,9 +108,17 @@ Flujo verificado contra la app con `dataMode: supabase`, en una campaña tempora
 - [x] 2.500 vistas → 2 XLM incrementales pagados; 3.000 vistas → 422 por tope de 5 XLM por creador.
 - [x] Filas en la base coherentes con el contrato (`paid` de la #4: 35 → 40 XLM).
 
-## Pendiente / no verificado
+### Producción en Vercel — [wavo-stellar.vercel.app](https://wavo-stellar.vercel.app)
 
-- [ ] **Deploy en Vercel**: no realizado (requiere la cuenta del equipo). No hay URL pública todavía.
+Proyecto `wavo-stellar` conectado a GitHub (`main` se despliega solo). Variables de entorno cargadas como servidor; las 4 secretas como *Sensitive*.
+
+- [x] `/api/status` → `dataMode: supabase`, `stellarReady: true`.
+- [x] `/`, `/campaigns`, `/campaigns/[id]`, `/campaigns/new`, `/dashboard`, `/admin` → 200.
+- [x] Aprobar sin sesión → 401; contraseña incorrecta → 401; contraseña correcta → 200 con cookie `httpOnly`.
+- [x] La página de la campaña demo lee del contrato: 100 XLM disponibles on-chain en la campaña #3.
+- [x] No se aprobó ni pagó nada en producción: la campaña #3 queda intacta para el video.
+
+## Pendiente / no verificado
 - [ ] Reserva on-chain al aprobar (`reserve_reward`): soportada y testeada en el contrato, no conectada a la app.
 - [ ] Wallet del navegador (Freighter) para marcas y creadores.
 - [ ] Verificación automática de vistas (fuera del alcance del MVP por diseño).
