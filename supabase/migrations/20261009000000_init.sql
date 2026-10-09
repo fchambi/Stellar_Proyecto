@@ -84,7 +84,7 @@ create or replace function public.wavo_reserve_reward(
   p_views_to bigint
 ) returns public.reward_distributions
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
@@ -145,7 +145,7 @@ $$;
 create or replace function public.wavo_cancel_reward(p_distribution_id uuid)
 returns public.reward_distributions
 language plpgsql
-security definer
+security invoker
 set search_path = public
 as $$
 declare
