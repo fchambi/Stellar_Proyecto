@@ -201,13 +201,18 @@ export async function rejectSubmission(submissionId: string) {
   return getRepo().updateSubmission(submissionId, { status: "rejected", pending_reward: 0n });
 }
 
-/** Determinista por (campaña on-chain, envío, snapshot de vistas): mismo snapshot => mismo reward_id. */
+/**
+ * Determinista por (campaña on-chain, envío, snapshot de vistas, intento): mismo snapshot => mismo reward_id.
+ * `attempt` cuenta las reservas canceladas del mismo snapshot, que nunca se pagaron on-chain.
+ */
 export function rewardIdFor(
   sub: Pick<Submission, "id" | "rewarded_views" | "verified_views">,
   contractCampaignId: string | null,
+  attempt = 0,
 ): string {
+  const base = `wavo:${contractCampaignId ?? "offchain"}:${sub.id}:${sub.rewarded_views}:${sub.verified_views}`;
   return createHash("sha256")
-    .update(`wavo:${contractCampaignId ?? "offchain"}:${sub.id}:${sub.rewarded_views}:${sub.verified_views}`)
+    .update(attempt > 0 ? `${base}:${attempt}` : base)
     .digest("hex");
 }
 
@@ -222,7 +227,14 @@ export async function approveSubmission(submissionId: string) {
 
   const repo = getRepo();
   const dists = await repo.listDistributions(campaign.id);
-  const rewardId = rewardIdFor(sub, campaign.contract_campaign_id);
+  const attempt = dists.filter(
+    (d) =>
+      d.submission_id === sub.id &&
+      d.status === "cancelled" &&
+      d.views_from === sub.rewarded_views &&
+      d.views_to === sub.verified_views,
+  ).length;
+  const rewardId = rewardIdFor(sub, campaign.contract_campaign_id, attempt);
   const existing = dists.find((d) => d.reward_id === rewardId);
   if (existing) return { distribution: existing, idempotent: true };
 
@@ -271,7 +283,16 @@ export async function approveSubmission(submissionId: string) {
 }
 
 export async function cancelDistribution(distributionId: string) {
-  return getRepo().cancelReward(distributionId);
+  const repo = getRepo();
+  const d = await repo.getDistribution(distributionId);
+  if (!d) throw new ServiceError(404, "Distribución no encontrada");
+  if (d.status === "failed" && isStellarReady()) {
+    const landed = d.tx_hash ? (await getTxOutcome(d.tx_hash)).status === "SUCCESS" : false;
+    if (landed || (await getOnchainRewardStatus(d.reward_id)) === "Paid") {
+      throw new ServiceError(409, "Esta recompensa figura pagada on-chain; usa \"Reintentar pago\" para reconciliar el estado.");
+    }
+  }
+  return repo.cancelReward(distributionId);
 }
 
 async function markPaid(d: RewardDistribution): Promise<RewardDistribution> {

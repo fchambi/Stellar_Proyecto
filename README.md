@@ -121,7 +121,7 @@ pnpm demo:flow http://localhost:3000
 2. Ejecutar `supabase/seed.sql` (generado con `pnpm seed:generate` desde `lib/seed-data.ts`).
 3. Añadir `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` a `.env.local` / Vercel.
 
-RLS está activado **sin políticas**: solo el servidor (service role) accede. Las reservas/cancelaciones usan funciones plpgsql atómicas (`wavo_reserve_reward`, `wavo_cancel_reward`) concedidas solo a `service_role`.
+RLS está activado **sin políticas**: solo el servidor (service role / secret key) accede. Las reservas/cancelaciones usan funciones plpgsql atómicas (`wavo_reserve_reward`, `wavo_cancel_reward`, `security invoker`) concedidas solo a `service_role`. El flujo completo se verificó contra un proyecto Supabase real (ver `CHECKLIST.md`).
 
 ## Variables de entorno
 
@@ -160,7 +160,6 @@ Sin Supabase, Vercel funcionará en modo memoria, que es efímero y por instanci
 - Vistas verificadas manualmente por el admin; no hay APIs de redes sociales ni oracle.
 - La reserva al aprobar es off-chain (base de datos), validada contra el saldo on-chain. El contrato ya soporta reservas on-chain (`reserve_reward`/`release_reward`, cubiertas por tests), pero conectar la aprobación a ellas queda como siguiente paso. Mientras tanto, el contrato impide pagar más de lo disponible (`InsufficientFunds`), pero la marca podría retirar con `withdraw_unallocated` fondos ya aprobados off-chain; el pago fallaría entonces de forma explícita, sin marcarse como pagado.
 - Modo memoria: no persistente, por instancia, etiquetado en la UI.
-- La integración con Supabase está implementada pero **no se probó contra una base real** (ver `CHECKLIST.md`).
 - Los montos se guardan como `bigint` en Postgres y viajan por PostgREST como números JSON: seguros hasta 2^53 stroops (~900 millones de XLM).
 - Token: XLM nativo vía SAC (los creadores no necesitan trustline) en lugar de un token WAVO propio.
 - Una campaña on-chain cuyos `reward_id` ya se pagaron no puede repetir la demo tras reiniciar el modo memoria (el contrato lo rechaza, como debe). Para repetir: `pnpm testnet:campaign <nuevo_id>` (100 XLM, CPM 2 por defecto) y `DEMO_ONCHAIN_CAMPAIGN_ID=<nuevo_id>`.

@@ -35,6 +35,8 @@ Todo lo marcado como hecho se ejecutó de verdad el 2026-10-09 contra Stellar **
 | Campaña #4 `fund_campaign` (100 XLM) | [`687ad091…fb6202c9`](https://stellar.expert/explorer/testnet/tx/687ad091e85ed66443183c0f38344824e9916beabc9f289fdfb2f2431b6202c9) |
 | **Pago desde la app: Ana 20 XLM** (campaña #4) | [`4159a9d7…1f16fb51`](https://stellar.expert/explorer/testnet/tx/4159a9d770e097ec19cb5c1c93390ba3f3b405143e5f4716a26a0c141f16fb51) |
 | **Pago desde la app: Bruno 15 XLM** (campaña #4) | [`569efd19…dfda79029`](https://stellar.expert/explorer/testnet/tx/569efd191edfba493493c08c73b28b5ac9b5f068001c88fec010a3ddfda79029) |
+| **App + Supabase: 3 XLM a Ana** (campaña #4, tras liberar y re-aprobar) | [`d47b1503…5ec8181`](https://stellar.expert/explorer/testnet/tx/d47b15039ef949bead97d8792a0543c650277fd4c66d1ea95ca04a0425ec8181) |
+| **App + Supabase: 2 XLM a Ana** (campaña #4, vistas incrementales) | [`c7ece1c8…3fd1b1`](https://stellar.expert/explorer/testnet/tx/c7ece1c8e9ab5947f1f62dcf89d36b6b9021b8125632b68704120029bb3fd1b1) |
 
 Estado on-chain leído con `get_campaign` al cierre:
 
@@ -43,9 +45,9 @@ Estado on-chain leído con `get_campaign` al cierre:
 | #1 | 100 XLM | 35 XLM | 0 | abierta |
 | #2 | 10 XLM | 1 XLM | 9 XLM | cerrada |
 | #3 | 100 XLM | 0 | 0 | abierta, **sin usar** (para el video) |
-| #4 | 100 XLM | 35 XLM | 0 | abierta |
+| #4 | 100 XLM | 40 XLM | 0 | abierta |
 
-La campaña #4 existe porque la derivación de `reward_id` cambió (ahora incluye el ID de campaña on-chain) después de los pagos de la #1; se repitió el flujo completo para verificar el código final.
+La campaña #4 existe porque la derivación de `reward_id` cambió (ahora incluye el ID de campaña on-chain) después de los pagos de la #1; se repitió el flujo completo para verificar el código final. También se usó para la prueba con Supabase (35 + 3 + 2 = 40 XLM).
 
 ## Pruebas completadas
 
@@ -93,9 +95,21 @@ Cálculo incremental `floor(delta * cpm / 1000)`, tope `max_reward`, bloqueo por
 - [x] URL de contenido inválida → HTTP 400.
 - [x] Todas las páginas (`/`, `/campaigns`, `/campaigns/[id]`, `/campaigns/new`, `/dashboard`, `/admin`) responden 200.
 
+### Con Supabase real (proyecto `jyeldtjvzwfukdekhjuy`) + Testnet
+
+Migración y seed aplicados. RLS activo en las 4 tablas sin políticas (solo backend); `wavo_reserve_reward` y `wavo_cancel_reward` son `security invoker` y solo `service_role` puede ejecutarlas. El único aviso del linter de seguridad es informativo ("RLS sin políticas"), intencional.
+
+Flujo verificado contra la app con `dataMode: supabase`, en una campaña temporal vinculada a la #4 (luego borrada de la base):
+
+- [x] Crear campaña, vincular on-chain, unirse y enviar contenido persisten en Postgres.
+- [x] 1.500 vistas → 3 XLM reservados (RPC atómica); re-aprobar → 422.
+- [x] Liberar → `cancelled`; re-aprobar genera un `reward_id` nuevo y vuelve a reservar 3 XLM.
+- [x] Pago confirmado on-chain; re-pagar → "Ya estaba pagada".
+- [x] 2.500 vistas → 2 XLM incrementales pagados; 3.000 vistas → 422 por tope de 5 XLM por creador.
+- [x] Filas en la base coherentes con el contrato (`paid` de la #4: 35 → 40 XLM).
+
 ## Pendiente / no verificado
 
-- [ ] **Supabase contra una base real**: el repositorio, la migración y las funciones RPC están escritos, pero no se ejecutaron (sin credenciales, Docker ni `psql` en el entorno de desarrollo). Primer paso al configurarlo: aplicar la migración y el seed y correr `pnpm demo:flow` con una campaña on-chain nueva.
 - [ ] **Deploy en Vercel**: no realizado (requiere la cuenta del equipo). No hay URL pública todavía.
 - [ ] Reserva on-chain al aprobar (`reserve_reward`): soportada y testeada en el contrato, no conectada a la app.
 - [ ] Wallet del navegador (Freighter) para marcas y creadores.
