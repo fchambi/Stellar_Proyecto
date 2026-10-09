@@ -1,0 +1,12 @@
+-- Generado por scripts/generate-seed.ts. No editar a mano.
+-- Campaña demo: presupuesto 100 XLM (1.000.000.000 stroops), CPM 2 XLM, máx. 50 XLM por creador.
+begin;
+insert into public.campaigns (id, title, description, brand_name, platform, rules, budget, cpm, max_reward, status, contract_campaign_id, token_address, created_at) values ('11111111-1111-4111-8111-111111111111', 'Lanzamiento Café Andino: tu ritual de la mañana', 'Crea un video corto mostrando cómo preparas tu café de la mañana con Café Andino. Buscamos contenido auténtico, en español, con buena luz y el producto visible en los primeros 3 segundos.', 'Café Andino', 'any', '1. Video original de 15 a 60 segundos.
+2. Mencionar @cafeandino y #RitualAndino.
+3. Sin contenido engañoso ni bots: las vistas se verifican manualmente.
+4. Publicación pública durante al menos 30 días.', 1000000000, 20000000, 500000000, 'active', '3', 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC', '2026-10-09T15:00:00.000Z') on conflict (id) do nothing;
+insert into public.participants (id, campaign_id, display_name, stellar_address, joined_at) values ('22222222-2222-4222-8222-222222222221', '11111111-1111-4111-8111-111111111111', 'Ana Rivera', 'GCKTEK6KZ7ISJL33J4TV4PECMELKA7E67IVFJ3NC66MAFBYJP2DPGU2O', '2026-10-09T15:00:00.000Z') on conflict (id) do nothing;
+insert into public.participants (id, campaign_id, display_name, stellar_address, joined_at) values ('22222222-2222-4222-8222-222222222222', '11111111-1111-4111-8111-111111111111', 'Bruno Méndez', 'GCFALVRUZCESIXOJ2EWGW3OGZR5ZSMWMKU7LSBGVNDOBXUCXZDNWLJB2', '2026-10-09T15:00:00.000Z') on conflict (id) do nothing;
+insert into public.submissions (id, campaign_id, participant_id, content_url, platform, status, verified_views, rewarded_views, pending_reward, created_at) values ('33333333-3333-4333-8333-333333333331', '11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222221', 'https://www.tiktok.com/@anarivera/video/7420000000000000001', 'tiktok', 'verified', 10000, 0, 200000000, '2026-10-09T15:00:00.000Z') on conflict (id) do nothing;
+insert into public.submissions (id, campaign_id, participant_id, content_url, platform, status, verified_views, rewarded_views, pending_reward, created_at) values ('33333333-3333-4333-8333-333333333332', '11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222', 'https://www.instagram.com/reel/C0wavoDemo2/', 'instagram', 'verified', 7500, 0, 150000000, '2026-10-09T15:00:00.000Z') on conflict (id) do nothing;
+commit;
